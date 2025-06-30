@@ -1,4 +1,5 @@
 ﻿using AnalyticsDemo.Application.Interfaces;
+using AnalyticsDemo.Infra.Caching;
 using AnalyticsDemo.Infra.Logger;
 using AnalyticsDemo.Infra.Persistence.Repository;
 using AnalyticsDemo.Infra.Persistence.Repository.Interfaces;
@@ -17,6 +18,7 @@ namespace AnalyticsDemo.Infra
             services.AddScoped<IAdMetricsReadRepository, AdMetricsReadRepository>();
             services.AddScoped<ICampaignReadRepository, CampaignReadRepository>();
             services.AddSingleton(typeof(IAppLogger<>), typeof(SerilogLogger<>));
+            services.AddSingleton<ICacheService, RedisCacheService>();
             services.AddSingleton(Log.Logger);
             return services;
         }
