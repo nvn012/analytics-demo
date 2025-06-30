@@ -1,0 +1,59 @@
+          			Real Time streaming Platform
+
+Overview of problem statement: 
+We are building a real time streaming platform for shopping networks like amazon, Flipkart to capture and process real time event like ad click, product view, add to cart activities to generate insights for retailers to improve their advertising strategies and increase user engagement. 
+
+Overview of the design:
+We have four major parts primarily to build a system for analytics which are Event Ingestion, Event processing, Data storage and Analytics engine, below is the overview of the design of these each component:
+
+Event Ingestion: There are multiple way we can ingest raw events with low latency like Kafka stream, Kinesis etc. Since we are building a multi-tenant cloud native system. The idea is to isolate streams on tenant level and provide some interface for low latency streaming. I have chosen AWS kinesis Data stream (KDS) along with a light weight .net API hosted on AES Fargate cluster to ingest stream to KDS. The role of this endpoint is to tag tenant id as partition key and send stream to proper KDS shard. 
+This is backed by a SQS against a lambda function for failed event, retries and DLQ purpose. IF KDS is not healthy SQS can be used to buffer incoming streams which can hold significant amount of data in case if downstream application is down.
+I have also used Redis in front of PostgreSQL for user session management.
+
+ 
+
+
+There is another way here is to have our own API to enrich the stream with appropriate tenant Id and user/session id. The trade of here is scaling and low latency. Having raw stream fed directly to KDS would provide the best latency, however considering authorization/tenant Check and to apply rate limiting, throttling I have used API Gateway or a own API.
+The whole setup can also be used for API rate limiting/ throttling and blacklisting/whitelisting tenants/IPs.
+
+Event Processing and Storage: Once we have ingested the stream, we need to process the stream into some persistence storage and do some real time analytics as well. 
+I am using AWS kinesis data analytics (KDA) which a managed service over Apache Flink. It can help us to do some real time analysis/transformation over raw events, it also provides features like event aggregation/stateful processing, we can use time/data-based windows for real time analytics. 
+Lambda can process these streams and push raw events to DynamoDB for raw event storage along with tenant Id isolation. Each tenant can have a separate schema, and Lambda can extract tenant ids from streams and push it to appropriate Dynamo Schema. Along  with insights from KDA we can do push meaningful insights to PostgreSQL for our analytics engine like ad clicks, Add on products, Checkouts.
+The trade off here is from our raw events we might not need all the data real time, we can have some eventual consistent storage for our raw events and our analytics engine can query data from DynamoDB for historical data analysis/reports.
+However for real time insights I have chosen PostgreSQL for it relational characterises. We can store only the required insights in a normalised manner. Like for example for a ad campaign lets say 1000 users click in 1 min I would store 1000 raw events to DynamoDB however at the same time I can have a Table in PostgreSQL with columns like Ad Campaign, Product Id, User clicks, For each click event I would increase the counter in  PostgreSQL DB so that our analytics engine doesn’t have to query 1000 records and having a normalized data in RDBMS data storage help us to get insights against a ad campaign for e.g. with minimal latency.
+The same analytics engine can use the Dynamo DB for historical or batch data processing.
+Also we will have a tenant schema isolation for PostgreSQL storage as well. I have used lambda to push enriched/aggregated data to PostgreSQL we can also KDS JDBC sink to directly push event to PostgreSQL.
+
+ 
+If we need more granular control over event processing for real time analytics we can have a sperate light weight .net API based setup or an Lambda which can process events to generate insights from it and put it to PostgreSQL however API cannot directly read from KDA we would need an intermediate storage for our APIs to process the events probably S3 or SQS.
+
+Analytics Engine/Data Insights: Once we have stored our insights and raw events we need some engine to query data transform and provide insights to end user, also the same engine can process historic data from DynamoDB and provide historical insights/reports. This is probably going to be a read heavy application. 
+I would create a .net core based microservice using domain driven design along with clean architecture. Also, we would need a tenant resolver framework inside it to process tenant specific data. Which can be part of microservice itself. Vendors would query APIs like GET /ad/{campaignID}/clicks and the system would fetch data from our RDBMS store. 
+This can be deployed in a AWS EKS Cluster.
+
+
+ 
+
+
+Key Aspects of the System
+Scalability: There are 2 pieces of this design where we would need to have scaling. 
+One is during data ingestion we are using AWS ECS Fargate deployment for our ingestion endpoint which can scale with task up/down. We can configure min/max task count along with baseline.
+Since we are using AWS managed KDS which is self-managed. However, we can configure shard per user and partition key for each user, if specific tenant has a greater number of users, we can have multiple shards for that user for more RPS/throttling. 
+The second is analytics service, we can have it deployed it against AWS EKS which is managed service for Kubernetes, we can have multiple pod setup and pod up pod down services configured for scale up/down. Also, we can have alba gains our EKS to distribute load against pods.
+
+
+Multi-Tenancy: For data ingestion we are using ingestion endpoint which can route streams to tenant specific partition key. This setup can capture tenanted from JWT token and tag tenant id to stream for our downstream application. 
+For database we can have schema-based tenant isolation for both DynamoDB and PostgreSQL. If any concern for GDPR compliance we can have separate DB for each tenant.
+
+Metrics and Monitoring: The ideal metrics for observability/monitoring would be Api response time, Error rate and resource uses. We can setup Grafana dashboard along with CloudWatch for better monitoring.
+Alo we need to keep an eye on event fails, retries and DLQ. A SNS can be configured against KDA/KDS for those insights, to make sure we are not losing user events and if we are we can get notified about that. 
+Challenges and Trade-offs: The first challenge would be against low latency of event ingestion. We can have API GW/Authorizer to tag our stream for tenant id. However, it has certain RPS limits. The trade off would be to push raw stream to KDS and let ingestion endpoint instead of API GW against KDS decide tenant id and add it to appropriate Schema, however that would add minimal latency to event processing. So, trade-off would be when do we do a clean up of raw stream and route it to tenant specific DB/Schema.
+
+The other trade of would be storing raw event in a DynamoDB, which is not an ACID compliant DB or might not get latest data all the time. Since for real time Analytics we are using PostgreSQL which is consistent DB, but for raw event storage we need a DB which scales indefinitely can provide persistent schema again different schema so DynamoDB would be a better choice.
+
+API Development: For analytics engine I have chosen a .net core based microservice which also have a inbuilt tenant resolver It would be based on Domain driven design along with clean architecture, which make it quite maintainable and extendable. Also, since we will have a lot of aggregation against ads, clicks, view so DDD would be a ideal design choice for this service. 
+
+Data Retention: Since we are going to have a lot of raw data in our DynamoDB for each clicks, we can have a framework to archive 6 months old data to a cold storage. Generally, the analytics is not needed for more than 6 months. Just in case if we need to get insights for longer data we can have a background jobs or Glue job which can scan the historical data and provide reports/insights and for our microservice we can query PostgreSQL for real time analytics and DynamoDB for detailed reports.
+
+Deployment Overview: I have chosen AWS EKS for analytics service in a multi pod setup. Which can be configured again EKS services with pod up/down strategy. 
+
