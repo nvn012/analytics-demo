@@ -4,6 +4,9 @@ A analytics microservice built with .NET 8, designed to process and serve campai
 
 ## Architecture Overview
 
+![Untitled Diagram (15)](https://github.com/user-attachments/assets/8e3e7df3-531e-4af4-a981-017f60bf5d9f)
+
+
 The system follows a event-driven architecture with the following components:
 
 ### Data Pipeline
