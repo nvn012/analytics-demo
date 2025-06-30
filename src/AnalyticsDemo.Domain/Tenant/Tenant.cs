@@ -1,5 +1,9 @@
 ﻿namespace AnalyticsDemo.Domain.Tenant
 {
+    /// <summary>
+    /// basic sto for tenat resolved, it can be extended for more details and hooke with 
+    /// secrets manager in prod level setup
+    /// </summary>
     public class Tenant
     {
         /// <summary>

@@ -33,7 +33,6 @@ namespace AnalyticsDemo.Infra.TenantRepo
             {
                 TenantId = _claimsAccessor.ClaimsData.TenantId,
                 TenantName = _claimsAccessor.ClaimsData.TenantDisplayName,
-                Host = _configuration["Tenants:Host"],
                 ReadConnectionString = _configuration["Tenants:ReadConnectionString"],
                 WriteConnectionString = _configuration["Tenants:WriteConnectionString"]
             };

@@ -2,7 +2,6 @@
 using AnalyticsDemo.Infra.Caching;
 using AnalyticsDemo.Infra.Logger;
 using AnalyticsDemo.Infra.Persistence.Repository;
-using AnalyticsDemo.Infra.Persistence.Repository.Interfaces;
 using AnalyticsDemo.Infra.TenantRepo;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;

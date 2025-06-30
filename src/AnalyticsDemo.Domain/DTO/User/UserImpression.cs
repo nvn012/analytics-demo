@@ -1,5 +1,9 @@
 ﻿namespace AnalyticsDemo.Domain.DTO.User
 {
+    /// <summary>
+    /// dto for further detail analytics
+    /// like user behaviour intraction and all
+    /// </summary>
     internal class UserImpression 
     {
         public long UserId { get; private set; }

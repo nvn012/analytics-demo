@@ -4,16 +4,10 @@ using System.Text.Json;
 
 namespace AnalyticsDemo.Api.Middleware
 {
-    public class ExceptionHandlerMiddleware
+    public class ExceptionHandlerMiddleware(RequestDelegate next, IAppLogger<ExceptionHandlerMiddleware> logger)
     {
-        private readonly RequestDelegate _next;
-        private readonly IAppLogger<ExceptionHandlerMiddleware> _logger;
-
-        public ExceptionHandlerMiddleware(RequestDelegate next, IAppLogger<ExceptionHandlerMiddleware> logger)
-        {
-            _next = next;
-            _logger = logger;
-        }
+        private readonly RequestDelegate _next = next;
+        private readonly IAppLogger<ExceptionHandlerMiddleware> _logger = logger;
 
         public async Task InvokeAsync(HttpContext context)
         {

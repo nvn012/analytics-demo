@@ -3,6 +3,10 @@ using Serilog;
 
 namespace AnalyticsDemo.Infra.Logger
 {
+    /// <summary>
+    /// logger over serilog for appluication
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class SerilogLogger<T> : IAppLogger<T>
     {
         private readonly ILogger _logger;

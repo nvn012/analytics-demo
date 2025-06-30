@@ -1,6 +1,6 @@
 ﻿namespace AnalyticsDemo.Domain.DTO.Campaign
 {
-    internal record Campaign
+    public record Campaign
     {
         public Guid CampaignId { get; set; }
         public DateTime? CampaignStartDate { get; set; }

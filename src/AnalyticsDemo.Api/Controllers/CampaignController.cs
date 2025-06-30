@@ -1,5 +1,4 @@
-﻿using AnalyticsDemo.Application.AdMetrics.Queries.Ads;
-using AnalyticsDemo.Application.AdMetrics.Queries.Campaign;
+﻿using AnalyticsDemo.Application.AdMetrics.Queries.Campaign;
 using AnalyticsDemo.Application.Interfaces;
 using AnalyticsDemo.Domain.DTO.Campaign;
 using AnalyticsDemo.Domain.Request;

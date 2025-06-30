@@ -1,7 +1,6 @@
 ﻿using AnalyticsDemo.Application.Interfaces;
 using AnalyticsDemo.Domain.DTO.Campaign;
 using AnalyticsDemo.Domain.Request;
-using AnalyticsDemo.Infra.Persistence.Repository.Interfaces;
 using AnalyticsDemo.Infra.TenantRepo;
 
 namespace AnalyticsDemo.Infra.Persistence.Repository

@@ -5,6 +5,9 @@ using System.Text.Json;
 
 namespace AnalyticsDemo.Infra.Caching
 {
+    /// <summary>
+    /// simple caching layer
+    /// </summary>
     public class RedisCacheService : ICacheService
     {
         private readonly IConnectionMultiplexer _redis;

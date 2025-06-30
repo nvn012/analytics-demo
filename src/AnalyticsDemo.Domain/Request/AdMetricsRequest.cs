@@ -1,5 +1,8 @@
 ﻿namespace AnalyticsDemo.Domain.Request
 {
+    /// <summary>
+    /// Request dto to get ad metrics
+    /// </summary>
     public record AdMetricsRequest
     {
         public Guid CampaignId { get; set; }
